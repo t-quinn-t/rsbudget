@@ -349,6 +349,7 @@ dependencies = [
  "pretty_env_logger",
  "serde",
  "sqlx",
+ "thiserror",
  "tide",
  "uuid 1.1.0",
 ]

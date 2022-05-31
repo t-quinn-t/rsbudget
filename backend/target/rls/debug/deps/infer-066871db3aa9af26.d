@@ -1,0 +1,14 @@
+/home/qtao/Dev/projects/rbudget/backend/target/rls/debug/deps/infer-066871db3aa9af26.rmeta: /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/lib.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/map.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/mod.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/app.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/archive.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/audio.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/doc.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/font.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/image.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/video.rs
+
+/home/qtao/Dev/projects/rbudget/backend/target/rls/debug/deps/infer-066871db3aa9af26.d: /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/lib.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/map.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/mod.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/app.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/archive.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/audio.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/doc.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/font.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/image.rs /home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/video.rs
+
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/lib.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/map.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/mod.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/app.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/archive.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/audio.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/doc.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/font.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/image.rs:
+/home/qtao/.cargo/registry/src/github.com-1ecc6299db9ec823/infer-0.2.3/src/matchers/video.rs:

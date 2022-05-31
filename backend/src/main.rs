@@ -1,10 +1,13 @@
+use std::str::FromStr;
+
 use backend::errors::Error;
 
 use dotenv;
 
-use sqlx::Pool;
-use sqlx::postgres::Postgres;
+use sqlx::{Pool, ConnectOptions};
+use sqlx::sqlite::{Sqlite, SqliteConnectOptions};
 use sqlx::query;
+
 
 #[async_std::main]
 async fn main() -> Result<(), Error> {
@@ -12,9 +15,9 @@ async fn main() -> Result<(), Error> {
 
     // Config database
     let db_url = std::env::var("DATABASE_URL")?;
-    dbg!(db_url);
-    let mut db_pool: Pool<Postgres> = Pool::connect(&db_url).await?;
-    let rows = query!("SELECT 1 AS one").fetch_one(&mut db_pool).await?;
+
+    dbg!(&db_url);
+    let db_pool: Pool<Sqlite> = Pool::connect(&db_url).await?;
 
     // Setup server
     let mut app = tide::new();
@@ -23,5 +26,3 @@ async fn main() -> Result<(), Error> {
 
     Ok(())
 }
-
-

@@ -1,11 +1,9 @@
-use std::str::FromStr;
-
 use backend::errors::Error;
 
 use dotenv;
 
-use sqlx::{Pool, ConnectOptions};
-use sqlx::sqlite::{Sqlite, SqliteConnectOptions};
+use sqlx::{Pool};
+use sqlx::sqlite::{Sqlite};
 use sqlx::query;
 
 
@@ -18,6 +16,8 @@ async fn main() -> Result<(), Error> {
 
     dbg!(&db_url);
     let db_pool: Pool<Sqlite> = Pool::connect(&db_url).await?;
+    let rows = query!("select 1 as one").fetch_one(&db_pool).await?;
+    dbg!(rows);
 
     // Setup server
     let mut app = tide::new();

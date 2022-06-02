@@ -1,4 +1,5 @@
 use crate::errors::Error;
+use crate::record::Expense;
 
 use std::fs;
 
@@ -14,7 +15,7 @@ trait DS {
 }
 
 trait ExpenseDS {
-    fn append_one(&self, amount: i32, date: Date<Local>, name: String, tag: String) -> Result<(), Error>;
+    fn append_one(&self, epx:& Expense) -> Result<(), Error>;
 }
 
 pub struct DataStore {
@@ -30,18 +31,21 @@ impl DS for DataStore {
     }
 }
 
-
-
 impl ExpenseDS for DataStore {
 
-    fn append_one(&self, amount: i32, date: Date<Local>, name: String, tag: String) -> Result<(), Error> {
+    fn append_one(&self, exp:& Expense) -> Result<(), Error> {
 
-        let id = Uuid::new_v4().to_bytes_le();
-        let date_str= date.to_string();
         let stmt = "
             INSERT INTO expenses (uuid, name, tag, date, amount)
+            VALUES (?1, ?2, ?3, ?4, ?5)
         ";
-        self.conn.execute(stmt, params![id, name, tag, date_str, amount])?;
+        self.conn.execute(stmt, params![
+                          exp.id(),
+                          exp.name(),
+                          exp.tag(),
+                          exp.date(),
+                          exp.amount()
+        ])?;
 
         Ok(()) 
     }
@@ -49,7 +53,7 @@ impl ExpenseDS for DataStore {
    
 impl DataStore {
 
-       fn init_db() -> Result<Connection, Error> {
+    fn init_db() -> Result<Connection, Error> {
 
         // Connect to db
         let mut path = dirs::config_dir().unwrap();
@@ -65,14 +69,20 @@ impl DataStore {
                 uuid BLOB NOT NULL PRIMARY KEY, 
                 name VARCHAR(255) NOT NULL, 
                 tag VARCHAR(255) NOT NULL,
-                date VARCHAR(255) NOT NULL, 
+                date INTEGER NOT NULL, 
                 amount INTEGER NOT NULL   
             )
         ";
         conn.execute(stmt, [])?;
-
         Ok(conn)
-
     }
+}
 
+#[test]
+fn test_crud() {
+    let ds: DataStore = DataStore::new().unwrap();
+    let test_uuid1 = uuid::Uuid::new_v4().to_bytes_le();
+    let test_date1 = Local::today();
+    let exp1 = Expense::new(test_uuid1, String::from("name1"), String::from("tag1"), test_date1.and_hms(0,0,0).timestamp(), 100);
+    ds.append_one(&exp1).unwrap();
 }

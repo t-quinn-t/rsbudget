@@ -9,20 +9,26 @@ use chrono::prelude::{Date, Local};
 extern crate log;
 extern crate pretty_env_logger;
 
-pub struct DataStore {
+trait DataStore {
+    fn new() -> Result<Self, Error> where Self: Sized;
+}
+
+pub struct ExpenseDataStore {
     conn: Connection,
 }
 
-impl DataStore {
+impl DataStore for ExpenseDataStore {
+    fn new() -> Result<ExpenseDataStore, Error> {
 
-    pub fn new() -> Result<DataStore, Error> {
-
-        Ok(DataStore {
-            conn: DataStore::init_db()?
+        Ok(ExpenseDataStore {
+            conn: ExpenseDataStore::init_db()?
         })
     }
+}
 
-    fn init_db() -> Result<Connection, Error> {
+impl ExpenseDataStore {
+
+       fn init_db() -> Result<Connection, Error> {
 
         // Connect to db
         let mut path = dirs::config_dir().unwrap();

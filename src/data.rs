@@ -2,7 +2,8 @@ use crate::errors::Error;
 
 use std::fs;
 
-use rusqlite::Connection;
+use uuid::*;
+use rusqlite::{Connection, params};
 use chrono::prelude::{Date, Local};
 
 extern crate log;
@@ -21,11 +22,6 @@ impl DataStore {
         })
     }
 
-    pub fn add_expense(amount: i32, date: Date<Local>, name: Option<String>, tag: String) -> Result<(), Error> {
-
-        Ok(())
-    }
-
     fn init_db() -> Result<Connection, Error> {
 
         // Connect to db
@@ -37,19 +33,31 @@ impl DataStore {
         let conn = Connection::open(&path)?;
 
         // Create tables if not exists
-        let sql = "
+        let stmt = "
             CREATE TABLE IF NOT EXISTS expenses (
                 uuid BLOB NOT NULL PRIMARY KEY, 
                 name VARCHAR(255) NOT NULL, 
                 tag VARCHAR(255) NOT NULL,
-                date INTEGER NOT NULL, 
+                date VARCHAR(255) NOT NULL, 
                 amount INTEGER NOT NULL   
             )
         ";
-        conn.execute(sql, [])?;
+        conn.execute(stmt, [])?;
 
         Ok(conn)
 
+    }
+
+    pub fn append_one(&self, amount: i32, date: Date<Local>, name: String, tag: String) -> Result<(), Error> {
+
+        let id = Uuid::new_v4().to_bytes_le();
+        let date_str= date.to_string();
+        let stmt = "
+            INSERT INTO expenses (uuid, name, tag, date, amount)
+        ";
+        self.conn.execute(stmt, params![id, name, tag, date_str, amount])?;
+
+        Ok(()) 
     }
 
 }

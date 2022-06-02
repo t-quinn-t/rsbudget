@@ -1,4 +1,3 @@
-use log::warn;
 extern crate log;
 extern crate pretty_env_logger;
 

@@ -9,24 +9,45 @@ use chrono::prelude::{Date, Local};
 extern crate log;
 extern crate pretty_env_logger;
 
-trait DataStore {
+trait DS {
     fn new() -> Result<Self, Error> where Self: Sized;
 }
 
-pub struct ExpenseDataStore {
+trait ExpenseDS {
+    fn append_one(&self, amount: i32, date: Date<Local>, name: String, tag: String) -> Result<(), Error>;
+}
+
+pub struct DataStore {
     conn: Connection,
 }
 
-impl DataStore for ExpenseDataStore {
-    fn new() -> Result<ExpenseDataStore, Error> {
+impl DS for DataStore {
+    fn new() -> Result<Self, Error> where Self:Sized {
 
-        Ok(ExpenseDataStore {
-            conn: ExpenseDataStore::init_db()?
+        Ok(DataStore {
+            conn: DataStore::init_db()?
         })
     }
 }
 
-impl ExpenseDataStore {
+
+
+impl ExpenseDS for DataStore {
+
+    fn append_one(&self, amount: i32, date: Date<Local>, name: String, tag: String) -> Result<(), Error> {
+
+        let id = Uuid::new_v4().to_bytes_le();
+        let date_str= date.to_string();
+        let stmt = "
+            INSERT INTO expenses (uuid, name, tag, date, amount)
+        ";
+        self.conn.execute(stmt, params![id, name, tag, date_str, amount])?;
+
+        Ok(()) 
+    }
+}
+   
+impl DataStore {
 
        fn init_db() -> Result<Connection, Error> {
 
@@ -52,18 +73,6 @@ impl ExpenseDataStore {
 
         Ok(conn)
 
-    }
-
-    pub fn append_one(&self, amount: i32, date: Date<Local>, name: String, tag: String) -> Result<(), Error> {
-
-        let id = Uuid::new_v4().to_bytes_le();
-        let date_str= date.to_string();
-        let stmt = "
-            INSERT INTO expenses (uuid, name, tag, date, amount)
-        ";
-        self.conn.execute(stmt, params![id, name, tag, date_str, amount])?;
-
-        Ok(()) 
     }
 
 }

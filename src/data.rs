@@ -78,11 +78,21 @@ impl DataStore {
     }
 }
 
+// ++++++++++++++++++++++++ Unit Test ++++++++++++++++++++++++ //
 #[test]
 fn test_crud() {
     let ds: DataStore = DataStore::new().unwrap();
+
     let test_uuid1 = uuid::Uuid::new_v4().to_bytes_le();
     let test_date1 = Local::today();
     let exp1 = Expense::new(test_uuid1, String::from("name1"), String::from("tag1"), test_date1.and_hms(0,0,0).timestamp(), 100);
+
+    let test_uuid2 = uuid::Uuid::new_v4().to_bytes_le();
+    let test_date2 = Local::today();
+    let exp2 = Expense::new(test_uuid2, String::from("name2"), String::from("tag2"), test_date2.and_hms(0,0,0).timestamp(), 200);
+
     ds.append_one(&exp1).unwrap();
+    ds.append_one(&exp2).unwrap();
 }
+
+

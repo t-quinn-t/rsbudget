@@ -2,7 +2,7 @@ use crate::errors::Error;
 use crate::record::Expense;
 
 use std::fs;
-
+use dotenv::dotenv;
 use rusqlite::{Connection, params};
 
 extern crate log;
@@ -10,6 +10,7 @@ extern crate pretty_env_logger;
 
 trait DS {
     fn new() -> Result<Self, Error> where Self: Sized;
+    fn mock() -> Result<Self, Error> where Self: Sized;
 }
 
 trait ExpenseDS {
@@ -23,9 +24,14 @@ pub struct DataStore {
 
 impl DS for DataStore {
     fn new() -> Result<Self, Error> where Self:Sized {
-
         Ok(DataStore {
             conn: DataStore::init_db()?
+        })
+    }
+
+    fn mock() -> Result<Self, Error> where Self:Sized {
+        Ok(DataStore {
+            conn: DataStore::init_testdb()?
         })
     }
 }
@@ -74,6 +80,25 @@ impl ExpenseDS for DataStore {
    
 impl DataStore {
 
+    fn init_testdb() -> Result<Connection, Error> {
+        dotenv().ok();
+       
+        let testdb_url = dotenv::var("TEST_DATABASE_URL").unwrap();
+        let conn = Connection::open(&testdb_url)?;
+        // Create tables if not exists
+        let stmt = "
+            CREATE TABLE IF NOT EXISTS expenses (
+                uuid BLOB NOT NULL PRIMARY KEY, 
+                name VARCHAR(255) NOT NULL, 
+                tag VARCHAR(255) NOT NULL,
+                date INTEGER NOT NULL, 
+                amount INTEGER NOT NULL   
+            )
+        ";
+        conn.execute(stmt, [])?;
+        Ok(conn)
+    }
+
     fn init_db() -> Result<Connection, Error> {
 
         // Connect to db
@@ -104,7 +129,7 @@ impl DataStore {
 fn test_crud() {
 
     use chrono::prelude::*;
-    let ds: DataStore = DataStore::new().unwrap();
+    let ds: DataStore = DataStore::mock().unwrap();
 
     let test_uuid1 = uuid::Uuid::new_v4().to_bytes_le();
     let test_date1 = Local::today();

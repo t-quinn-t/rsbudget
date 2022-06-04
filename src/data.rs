@@ -3,9 +3,7 @@ use crate::record::Expense;
 
 use std::fs;
 
-use uuid::*;
 use rusqlite::{Connection, params};
-use chrono::prelude::{Date, Local};
 
 extern crate log;
 extern crate pretty_env_logger;
@@ -16,6 +14,7 @@ trait DS {
 
 trait ExpenseDS {
     fn append_one(&self, epx:& Expense) -> Result<(), Error>;
+    fn list_all(&self) -> Result<Vec<Expense>, Error>;
 }
 
 pub struct DataStore {
@@ -49,6 +48,28 @@ impl ExpenseDS for DataStore {
 
         Ok(()) 
     }
+
+    fn list_all(&self) -> Result<Vec<Expense>, Error> {
+        
+        let mut stmt = self.conn.prepare("
+            SELECT * FROM expenses;
+        ")?;
+        let exp_iter = stmt.query_map([], |row| {
+            Ok(Expense::new(
+                    row.get("uuid")?,
+                    row.get("name")?,
+                    row.get("tag")?,
+                    row.get("date")?,
+                    row.get("amount")?
+                    ))
+        })?;   
+
+        let mut exp_list = Vec::new();
+        for expense in exp_iter {
+            exp_list.push(expense?);
+        }
+        Ok(exp_list)
+    }
 }
    
 impl DataStore {
@@ -81,6 +102,8 @@ impl DataStore {
 // ++++++++++++++++++++++++ Unit Test ++++++++++++++++++++++++ //
 #[test]
 fn test_crud() {
+
+    use chrono::prelude::*;
     let ds: DataStore = DataStore::new().unwrap();
 
     let test_uuid1 = uuid::Uuid::new_v4().to_bytes_le();
@@ -93,6 +116,11 @@ fn test_crud() {
 
     ds.append_one(&exp1).unwrap();
     ds.append_one(&exp2).unwrap();
+
+    let expected_list1 = vec![exp1, exp2];
+    let actual_list1 = ds.list_all().unwrap();
+    assert_eq!(expected_list1[0], actual_list1[0]);
+    assert_eq!(expected_list1[1], actual_list1[1]);
 }
 
 

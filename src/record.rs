@@ -1,9 +1,16 @@
+#[derive(Debug)]
 pub struct Expense {
     id: [u8; 16],
     name: String,
     tag: String,
     date_timestamp: i64,
     amount: i32
+}
+
+impl PartialEq<Expense> for Expense {
+    fn eq(&self, other: &Expense) -> bool {
+        self.id == other.id 
+    }
 }
 
 impl Expense {

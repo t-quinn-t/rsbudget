@@ -375,6 +375,7 @@ name = "rbudget"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "crossterm",
  "dirs",
  "dotenv",
  "log",

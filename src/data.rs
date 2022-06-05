@@ -16,6 +16,7 @@ trait DS {
 trait ExpenseDS {
     fn append_one(&self, epx:& Expense) -> Result<(), Error>;
     fn list_all(&self) -> Result<Vec<Expense>, Error>;
+    fn remove_all(&self) -> Result<(), Error>;
 }
 
 pub struct DataStore {
@@ -75,6 +76,11 @@ impl ExpenseDS for DataStore {
             exp_list.push(expense?);
         }
         Ok(exp_list)
+    }
+
+    fn remove_all(&self) -> Result<(), Error> {
+        
+        Ok(())
     }
 }
    
@@ -144,8 +150,13 @@ fn test_crud() {
 
     let expected_list1 = vec![exp1, exp2];
     let actual_list1 = ds.list_all().unwrap();
-    assert_eq!(expected_list1[0], actual_list1[0]);
     assert_eq!(expected_list1[1], actual_list1[1]);
+    assert_eq!(expected_list1[0], actual_list1[0]);
+
+    // Clear up 
+    let testdb_url = dotenv::var("TEST_DATABASE_URL").unwrap();
+    let conn = Connection::open(&testdb_url).unwrap();
+    conn.execute("
+            DROP TABLE IF EXISTS expenses;
+        ", []).unwrap();
 }
-
-

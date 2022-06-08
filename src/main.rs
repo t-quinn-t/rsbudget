@@ -5,7 +5,7 @@ use std::io;
 use tui::{
     Terminal, Frame, 
     backend::{Backend, CrosstermBackend},
-    widgets::{Widget, Block, Borders},
+    widgets::{Widget, Block, Borders, ListItem, List},
     layout::{Layout, Constraint, Direction}, 
 }; 
 
@@ -92,8 +92,8 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                         return Ok(());
                     },
                     KeyCode::Enter => {
-                        let exp = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input, String::from("test"),chrono::Local::today().and_hms(0,0,0).timestamp(), 100);
-                        return app.datastore.append_one(&exp);
+                        let exp = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input.clone(), String::from("test"),chrono::Local::today().and_hms(0,0,0).timestamp(), 100);
+                        app.datastore.append_one(&exp)?;
                     },
                     _ => {}
                 }
@@ -117,12 +117,22 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
 
     let input_block = Block::default()
         .borders(Borders::ALL) 
-        .title("Record Expense");
+        .title(app.state.input.clone());
     frame.render_widget(input_block, grid[0]);
 
-    let input_block = Block::default()
-        .borders(Borders::ALL) 
-        .title("Recent Expenses");
-    frame.render_widget(input_block, grid[1]);
+    frame.render_widget(render_list(app), grid[1]);
+}
+
+// UI Component Render 
+// These functions are highly coupled with tui
+fn render_list(app: &Controller) -> List {
+    let data = app.datastore.list_all().unwrap();
+    let mut ul = Vec::new();
+    for record in data {
+        let li = ListItem::new(record.name()); 
+        ul.push(li);
+    }
+    return List::new(ul)
+        .block(Block::default().title("Expenses").borders(Borders::ALL));
 }
 

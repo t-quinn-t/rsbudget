@@ -1,6 +1,6 @@
+// INSPIRATION: https://github.com/fdehau/tui-rs/blob/master/examples/user_input.rs
+
 use std::io;
-use std::thread;
-use std::time::Duration;
 
 use tui::{
     Terminal, Frame, 
@@ -15,30 +15,52 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 
-use rbudget::errors::Error;
-
 extern crate log;
+use log::*;
 extern crate pretty_env_logger;
 
-fn main() -> Result<(), Error> {
-    pretty_env_logger::init();
+use rbudget::errors::Error;
+use rbudget::data::*;
+use rbudget::record::*;
 
+/// Connects backend, persistency and frontent event 
+struct Controller {
+    datastore: DataStore, 
+    state: State    
+}
+
+struct State {
+    input: String
+}
+
+impl Controller {
+    fn new() -> Result<Controller, Error> {
+        Ok(Controller {
+            datastore: DataStore::new()?, 
+            state: State {
+                input: String::new() 
+            }
+        })
+    }
+}
+
+
+fn main() -> Result<(), Error> {
+   
+    // Initialization 
+    pretty_env_logger::init();
     let mut stdout = io::stdout();
     enable_raw_mode()?;
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 
-    // Init tui application
     let backend = CrosstermBackend::new(stdout);
+    let mut app = Controller::new()?;
     let mut terminal = Terminal::new(backend)?;
+
+    // Start the app
+    let app_result = run(&mut terminal, app);
     
-    terminal.draw(|f| {
-        render_layout(f);
-    })?;
-
-    // TODO: add quit function
-    thread::sleep(Duration::from_millis(5000));
-
-    // restore terminal
+    // Restore terminal
     disable_raw_mode()?;
     execute!(
         terminal.backend_mut(),
@@ -47,10 +69,41 @@ fn main() -> Result<(), Error> {
     )?;
     terminal.show_cursor()?;
 
+    // Log any error seen during execution
+    if let Err(error) = app_result {
+        error!("{}", error);
+    }
+
     Ok(())
 }
 
-fn render_layout<B: Backend>(frame: &mut Frame<B>) {
+fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<(), Error> {
+    loop {
+        terminal.draw(|f| render(f, &app))?;
+
+        let event = crossterm::event::read()?;
+        match event {
+            Event::Key(key) => {
+                match key.code {
+                    KeyCode::Char(ch) => {
+                        app.state.input.push(ch); 
+                    },
+                    KeyCode::Esc => {
+                        return Ok(());
+                    },
+                    KeyCode::Enter => {
+                        let exp = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input, String::from("test"),chrono::Local::today().and_hms(0,0,0).timestamp(), 100);
+                        return app.datastore.append_one(&exp);
+                    },
+                    _ => {}
+                }
+            },
+            _ => {}
+        }
+    }
+}
+
+fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     let grid = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)

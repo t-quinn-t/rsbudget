@@ -8,12 +8,12 @@ use rusqlite::{Connection, params};
 extern crate log;
 extern crate pretty_env_logger;
 
-trait DS {
+pub trait DS {
     fn new() -> Result<Self, Error> where Self: Sized;
     fn mock() -> Result<Self, Error> where Self: Sized;
 }
 
-trait ExpenseDS {
+pub trait ExpenseDS {
     fn append_one(&self, epx:& Expense) -> Result<(), Error>;
     fn list_all(&self) -> Result<Vec<Expense>, Error>;
     fn remove_all(&self) -> Result<(), Error>;

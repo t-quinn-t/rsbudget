@@ -7,10 +7,11 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     widgets::{Block, Borders, ListItem, List},
     layout::{Layout, Constraint, Direction}, 
+    text::Span
 }; 
 
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
+    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode, MouseButton, MouseEventKind},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -114,7 +115,8 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         .margin(2)
         .constraints(
             [
-                Constraint::Percentage(10),
+                Constraint::Length(1),
+                Constraint::Length(3),
                 Constraint::Percentage(90)
             ].as_ref()
         )
@@ -123,9 +125,13 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     let input_block = Block::default()
         .borders(Borders::ALL) 
         .title(app.state.input.clone());
-    frame.render_widget(input_block, grid[0]);
-
-    frame.render_widget(render_list(app), grid[1]);
+    let instruction = Span::from("Press i to insert expense");
+    let instruction_block = Block::default()
+        .borders(Borders::NONE)
+        .title(instruction);
+    frame.render_widget(instruction_block, grid[0]);
+    frame.render_widget(input_block, grid[1]);
+    frame.render_widget(render_list(app), grid[2]);
 }
 
 // UI Component Render 

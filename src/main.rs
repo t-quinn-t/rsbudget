@@ -5,7 +5,7 @@ use std::io;
 use tui::{
     Terminal, Frame, 
     backend::{Backend, CrosstermBackend},
-    widgets::{Widget, Block, Borders, ListItem, List},
+    widgets::{Block, Borders, ListItem, List},
     layout::{Layout, Constraint, Direction}, 
 }; 
 
@@ -74,6 +74,7 @@ fn main() -> Result<(), Error> {
         error!("{}", error);
     }
 
+    info!("Finished Execution");
     Ok(())
 }
 
@@ -88,12 +89,16 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                     KeyCode::Char(ch) => {
                         app.state.input.push(ch); 
                     },
+                    KeyCode::Backspace => {
+                        app.state.input.pop();
+                    },
                     KeyCode::Esc => {
                         return Ok(());
                     },
                     KeyCode::Enter => {
                         let exp = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input.clone(), String::from("test"),chrono::Local::today().and_hms(0,0,0).timestamp(), 100);
                         app.datastore.append_one(&exp)?;
+                        app.state.input = String::new()
                     },
                     _ => {}
                 }

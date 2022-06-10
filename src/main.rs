@@ -24,14 +24,23 @@ use rbudget::errors::Error;
 use rbudget::data::*;
 use rbudget::record::*;
 
-/// Connects backend, persistency and frontent event 
 struct Controller {
     datastore: DataStore, 
     state: State    
 }
 
+enum Field {
+    Name, Tag, Date, Amount
+}
+
+enum Mode {
+    Normal,
+    Insert(Field) 
+}
+
 struct State {
-    input: String
+    input: String, 
+    mode: Mode
 }
 
 impl Controller {
@@ -39,9 +48,17 @@ impl Controller {
         Ok(Controller {
             datastore: DataStore::new()?, 
             state: State {
-                input: String::new() 
+                input: String::new(),
+                mode: Mode::Normal
             }
         })
+    }
+
+    fn exec(&mut self, cmd: char) {
+        match cmd {
+            'i' => self.state.mode = Mode::Insert(Field::Name),
+            _ => {}
+        }
     }
 }
 
@@ -84,27 +101,44 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
         terminal.draw(|f| render(f, &app))?;
 
         let event = crossterm::event::read()?;
-        match event {
-            Event::Key(key) => {
-                match key.code {
-                    KeyCode::Char(ch) => {
-                        app.state.input.push(ch); 
-                    },
-                    KeyCode::Backspace => {
-                        app.state.input.pop();
-                    },
-                    KeyCode::Esc => {
-                        return Ok(());
-                    },
-                    KeyCode::Enter => {
-                        let exp = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input.clone(), String::from("test"),chrono::Local::today().and_hms(0,0,0).timestamp(), 100);
-                        app.datastore.append_one(&exp)?;
-                        app.state.input = String::new()
+        match app.state.mode {
+            Mode::Normal => {
+                match event {
+                    Event::Key(key) => {
+                        match key.code {
+                            KeyCode::Char(ch) => {
+                                app.exec(ch);
+                            },
+                            KeyCode::Esc => {
+                                return Ok(());
+                            }
+                            _ => {}
+                        }
                     },
                     _ => {}
                 }
             },
-            _ => {}
+            Mode::Insert(_) => {
+                match event {
+                    Event::Key(key) => {
+                        match key.code {
+                            KeyCode::Char(ch) => {
+                                app.state.input.push(ch);
+                            },
+                            KeyCode::Enter => {
+                                let rec = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input.clone(), app.state.input.clone(), chrono::Local::today().and_hms(0, 0, 0).timestamp(), 100);
+                                app.datastore.append_one(&rec)?;
+                                app.state.input = String::new();
+                            },
+                            KeyCode::Esc => {
+                                app.state.mode = Mode::Normal;
+                            },
+                            _ => {}
+                        }
+                    },
+                    _ => {}
+                }
+            }
         }
     }
 }

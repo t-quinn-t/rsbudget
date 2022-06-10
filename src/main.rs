@@ -7,7 +7,8 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     widgets::{Block, Borders, ListItem, List},
     layout::{Layout, Constraint, Direction}, 
-    text::Span
+    text::Span,
+    style::{Style, Color}
 }; 
 
 use crossterm::{
@@ -144,28 +145,53 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
 }
 
 fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
-    let grid = Layout::default()
+    
+    let stack = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
         .constraints(
             [
-                Constraint::Length(1),
-                Constraint::Length(3),
+                Constraint::Length(12),
                 Constraint::Percentage(90)
             ].as_ref()
         )
         .split(frame.size()); 
 
-    let input_block = Block::default()
-        .borders(Borders::ALL) 
-        .title(app.state.input.clone());
+    let chunk = Layout::default()
+        .direction(Direction::Horizontal) 
+        .margin(2)
+        .constraints(
+            [
+                Constraint::Percentage(20),
+                Constraint::Percentage(40),
+                Constraint::Percentage(40)
+            ].as_ref()
+        )
+        .split(stack[0]);
+
+    let input_stack_layout = Layout::default()
+        .direction(Direction::Vertical) 
+        .margin(1) 
+        .constraints(
+            [Constraint::Length(3), Constraint::Length(3)].as_ref()
+        );
+    let input_stack_left = input_stack_layout.split(chunk[1]);
+    let input_stack_right = input_stack_layout.split(chunk[2]);
+
     let instruction = Span::from("Press i to insert expense");
     let instruction_block = Block::default()
-        .borders(Borders::NONE)
-        .title(instruction);
-    frame.render_widget(instruction_block, grid[0]);
-    frame.render_widget(input_block, grid[1]);
-    frame.render_widget(render_list(app), grid[2]);
+        .borders(Borders::ALL)
+        .title(vec![
+            Span::from("Help \n"),
+            instruction
+        ]);
+
+    frame.render_widget(render_input_block(app, "Name"), input_stack_left[0]);
+    frame.render_widget(render_input_block(app, "Tag"), input_stack_left[1]);
+    frame.render_widget(render_input_block(app, "Date"), input_stack_right[0]);
+    frame.render_widget(render_input_block(app, "Amount"), input_stack_right[1]);
+    frame.render_widget(instruction_block, chunk[0]);
+    frame.render_widget(render_list(app), stack[1]);
 }
 
 // UI Component Render 
@@ -181,3 +207,13 @@ fn render_list(app: &Controller) -> List {
         .block(Block::default().title("Expenses").borders(Borders::ALL));
 }
 
+fn render_input_block<'a>(app: & Controller, name: &'a str) -> Block<'a> {
+    Block::default()
+        .borders(Borders::ALL)
+        .title(
+            vec![
+                Span::styled(name, Style::default().fg(Color::Yellow)),
+                Span::from(app.state.input.clone())
+            ]
+        )
+}

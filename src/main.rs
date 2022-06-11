@@ -30,6 +30,7 @@ struct Controller {
     state: State    
 }
 
+#[derive(PartialEq)]
 enum Field {
     Name, Tag, Date, Amount
 }
@@ -41,6 +42,7 @@ enum Mode {
 
 struct State {
     input: String, 
+    buffer: Expense,
     mode: Mode
 }
 
@@ -50,6 +52,7 @@ impl Controller {
             datastore: DataStore::new()?, 
             state: State {
                 input: String::new(),
+                buffer: Expense::empty(),
                 mode: Mode::Normal
             }
         })
@@ -126,7 +129,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                             KeyCode::Char(ch) => {
                                 app.state.input.push(ch);
                             },
-                            KeyCode::Enter => {
+                            KeyCode::Enter | KeyCode::Tab => {
                                 let rec = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input.clone(), app.state.input.clone(), chrono::Local::today().and_hms(0, 0, 0).timestamp(), 100);
                                 app.datastore.append_one(&rec)?;
                                 app.state.input = String::new();
@@ -186,10 +189,10 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
             instruction
         ]);
 
-    frame.render_widget(render_input_block(app, "Name"), input_stack_left[0]);
-    frame.render_widget(render_input_block(app, "Tag"), input_stack_left[1]);
-    frame.render_widget(render_input_block(app, "Date"), input_stack_right[0]);
-    frame.render_widget(render_input_block(app, "Amount"), input_stack_right[1]);
+    frame.render_widget(render_input_block(app, Field::Name), input_stack_left[0]);
+    frame.render_widget(render_input_block(app, Field::Tag), input_stack_left[1]);
+    frame.render_widget(render_input_block(app, Field::Date), input_stack_right[0]);
+    frame.render_widget(render_input_block(app, Field::Amount), input_stack_right[1]);
     frame.render_widget(instruction_block, chunk[0]);
     frame.render_widget(render_list(app), stack[1]);
 }
@@ -207,13 +210,27 @@ fn render_list(app: &Controller) -> List {
         .block(Block::default().title("Expenses").borders(Borders::ALL));
 }
 
-fn render_input_block<'a>(app: & Controller, name: &'a str) -> Block<'a> {
+fn render_input_block<'a>(app: & Controller, field: Field) -> Block<'a> {
+    let name = match field { 
+        Field::Name => "Title",
+        Field::Tag => "Tag",
+        Field::Amount => "Amount",
+        Field::Date => "Date"
+    };
+
+    let mut input_val = String::new();
+    if let Mode::Insert(f) = &app.state.mode {
+        if &field == f {
+            input_val.push_str(&app.state.input);
+        }
+    }
+
     Block::default()
         .borders(Borders::ALL)
         .title(
             vec![
                 Span::styled(name, Style::default().fg(Color::Yellow)),
-                Span::from(app.state.input.clone())
+                Span::from(input_val)
             ]
         )
 }

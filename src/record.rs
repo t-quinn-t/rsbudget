@@ -26,6 +26,16 @@ impl Expense {
         }
     }
 
+    pub fn empty() -> Expense {
+        Expense {
+            id: [0; 16],
+            name: String::new(),
+            tag: String::new(),
+            date_timestamp: 0,
+            amount: 0
+        }
+    }
+
     pub fn id(&self) -> [u8; 16] {
         return self.id;
     }
@@ -45,6 +55,16 @@ impl Expense {
     pub fn amount(&self) -> i32 {
         return self.amount;
     }
+
+    pub fn setId(&mut self, id:[u8; 16]) {
+        self.id = id;
+    }
+
+    pub fn setName(&mut self, name: &str) {
+        self.name = String::from(name);
+    }
+
+    
 
 }
 

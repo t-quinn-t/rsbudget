@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 #[derive(Debug)]
 pub struct Expense {
     id: [u8; 16],
@@ -28,7 +30,7 @@ impl Expense {
 
     pub fn empty() -> Expense {
         Expense {
-            id: [0; 16],
+            id: Uuid::new_v4().to_bytes_le(),
             name: String::new(),
             tag: String::new(),
             date_timestamp: 0,
@@ -65,7 +67,7 @@ impl Expense {
     }
 
     pub fn set_tag(&mut self, tag: &str) {
-        self.name = String::from(tag);
+        self.tag = String::from(tag);
     }
 
     pub fn set_date(&mut self, date: &str) {

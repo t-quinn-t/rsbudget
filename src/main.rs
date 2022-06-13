@@ -17,6 +17,8 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 
+use chrono::prelude::{Local, TimeZone, Utc};
+
 extern crate log;
 use log::*;
 extern crate pretty_env_logger;
@@ -256,8 +258,26 @@ fn render_list(app: &Controller) -> List {
 
 fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {
     if let Mode::Insert(f) = &app.state.mode {
-        if &field == f {
+        if field == *f {
             return Span::from(app.state.input.clone());
+        }
+        match field {
+            Field::Name => {
+                return Span::from(app.state.buffer.name());
+            }, 
+            Field::Tag => {
+                return Span::from(app.state.buffer.tag());
+            },
+            Field::Date => {
+                let date_timestamp = app.state.buffer.date();
+                if date_timestamp == 0 {
+                    return Span::from(String::new());
+                }
+                return Span::from(Utc.timestamp_nanos(date_timestamp).date().to_string());
+            },
+            Field::Amount => {
+                return Span::from(app.state.buffer.amount().to_string());
+            }
         }
     }
     return Span::from("");

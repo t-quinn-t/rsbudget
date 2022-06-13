@@ -7,7 +7,7 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     widgets::{Block, Borders, ListItem, List},
     layout::{Layout, Constraint, Direction}, 
-    text::Span,
+    text::{Span, Text},
     style::{Style, Color}
 }; 
 
@@ -148,7 +148,8 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
 }
 
 fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
-    
+   
+    // Top & Bottom
     let stack = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
@@ -160,6 +161,7 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         )
         .split(frame.size()); 
 
+    // Divide top into 3 columns
     let chunk = Layout::default()
         .direction(Direction::Horizontal) 
         .margin(2)
@@ -172,6 +174,7 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         )
         .split(stack[0]);
 
+    // Input fields and blocks
     let input_stack_layout = Layout::default()
         .direction(Direction::Vertical) 
         .margin(1) 
@@ -189,16 +192,36 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
             instruction
         ]);
 
-    frame.render_widget(render_input_block(app, Field::Name), input_stack_left[0]);
-    frame.render_widget(render_input_block(app, Field::Tag), input_stack_left[1]);
-    frame.render_widget(render_input_block(app, Field::Date), input_stack_right[0]);
-    frame.render_widget(render_input_block(app, Field::Amount), input_stack_right[1]);
+    // Name Input 
+    let input_block = render_input_block(app, Field::Name);
+    let input_block_inner_area = input_block.inner(input_stack_left[0]);
+    frame.render_widget(input_block, input_stack_left[0]);
+    let block_content = render_input(app, Field::Name);
+    frame.render_widget(Block::default().title(block_content), input_block_inner_area);
+
+    let input_block = render_input_block(app, Field::Tag);
+    let input_block_inner_area = input_block.inner(input_stack_left[1]);
+    frame.render_widget(input_block, input_stack_left[1]);
+    let block_content = render_input(app, Field::Tag);
+    frame.render_widget(Block::default().title(block_content), input_block_inner_area);
+
+    let input_block = render_input_block(app, Field::Date);
+    let input_block_inner_area = input_block.inner(input_stack_right[0]);
+    frame.render_widget(input_block, input_stack_right[0]);
+    let block_content = render_input(app, Field::Date);
+    frame.render_widget(Block::default().title(block_content), input_block_inner_area);
+
+    let input_block = render_input_block(app, Field::Amount);
+    let input_block_inner_area = input_block.inner(input_stack_right[1]);
+    frame.render_widget(input_block, input_stack_right[1]);
+    let block_content = render_input(app, Field::Amount);
+    frame.render_widget(Block::default().title(block_content), input_block_inner_area);
+
     frame.render_widget(instruction_block, chunk[0]);
     frame.render_widget(render_list(app), stack[1]);
 }
 
 // UI Component Render 
-// These functions are highly coupled with tui
 fn render_list(app: &Controller) -> List {
     let data = app.datastore.list_all().unwrap();
     let mut ul = Vec::new();
@@ -210,7 +233,16 @@ fn render_list(app: &Controller) -> List {
         .block(Block::default().title("Expenses").borders(Borders::ALL));
 }
 
-fn render_input_block<'a>(app: & Controller, field: Field) -> Block<'a> {
+fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {
+    if let Mode::Insert(f) = &app.state.mode {
+        if &field == f {
+            return Span::from(app.state.input.clone());
+        }
+    }
+    return Span::from("");
+}
+
+fn render_input_block<'a>(app: &Controller, field: Field) -> Block<'a> {
     let name = match field { 
         Field::Name => "Title",
         Field::Tag => "Tag",
@@ -218,19 +250,7 @@ fn render_input_block<'a>(app: & Controller, field: Field) -> Block<'a> {
         Field::Date => "Date"
     };
 
-    let mut input_val = String::new();
-    if let Mode::Insert(f) = &app.state.mode {
-        if &field == f {
-            input_val.push_str(&app.state.input);
-        }
-    }
-
     Block::default()
         .borders(Borders::ALL)
-        .title(
-            vec![
-                Span::styled(name, Style::default().fg(Color::Yellow)),
-                Span::from(input_val)
-            ]
-        )
+        .title(Span::styled(name, Style::default().fg(Color::Yellow)))
 }

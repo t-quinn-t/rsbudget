@@ -56,16 +56,13 @@ impl Expense {
         return self.amount;
     }
 
-    pub fn setId(&mut self, id:[u8; 16]) {
+    pub fn set_id(&mut self, id:[u8; 16]) {
         self.id = id;
     }
 
-    pub fn setName(&mut self, name: &str) {
+    pub fn set_name(&mut self, name: &str) {
         self.name = String::from(name);
     }
-
-    
-
 }
 
 

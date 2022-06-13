@@ -7,12 +7,12 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     widgets::{Block, Borders, ListItem, List},
     layout::{Layout, Constraint, Direction}, 
-    text::{Span, Text},
+    text::{Span},
     style::{Style, Color}
 }; 
 
 use crossterm::{
-    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode, MouseButton, MouseEventKind},
+    event::{DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
@@ -76,7 +76,7 @@ fn main() -> Result<(), Error> {
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 
     let backend = CrosstermBackend::new(stdout);
-    let mut app = Controller::new()?;
+    let app = Controller::new()?;
     let mut terminal = Terminal::new(backend)?;
 
     // Start the app
@@ -193,25 +193,28 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         ]);
 
     // Name Input 
-    let input_block = render_input_block(app, Field::Name);
+    let input_block = render_input_block(Field::Name);
     let input_block_inner_area = input_block.inner(input_stack_left[0]);
     frame.render_widget(input_block, input_stack_left[0]);
     let block_content = render_input(app, Field::Name);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
-    let input_block = render_input_block(app, Field::Tag);
+    // Tag Input 
+    let input_block = render_input_block(Field::Tag);
     let input_block_inner_area = input_block.inner(input_stack_left[1]);
     frame.render_widget(input_block, input_stack_left[1]);
     let block_content = render_input(app, Field::Tag);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
-    let input_block = render_input_block(app, Field::Date);
+    // Date Input 
+    let input_block = render_input_block(Field::Date);
     let input_block_inner_area = input_block.inner(input_stack_right[0]);
     frame.render_widget(input_block, input_stack_right[0]);
     let block_content = render_input(app, Field::Date);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
-    let input_block = render_input_block(app, Field::Amount);
+    // Amount Input
+    let input_block = render_input_block(Field::Amount);
     let input_block_inner_area = input_block.inner(input_stack_right[1]);
     frame.render_widget(input_block, input_stack_right[1]);
     let block_content = render_input(app, Field::Amount);
@@ -242,7 +245,7 @@ fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {
     return Span::from("");
 }
 
-fn render_input_block<'a>(app: &Controller, field: Field) -> Block<'a> {
+fn render_input_block<'a>(field: Field) -> Block<'a> {
     let name = match field { 
         Field::Name => "Title",
         Field::Tag => "Tag",

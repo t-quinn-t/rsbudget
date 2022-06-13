@@ -105,7 +105,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
         terminal.draw(|f| render(f, &app))?;
 
         let event = crossterm::event::read()?;
-        match app.state.mode {
+        match &app.state.mode {
             Mode::Normal => {
                 match event {
                     Event::Key(key) => {
@@ -122,7 +122,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                     _ => {}
                 }
             },
-            Mode::Insert(_) => {
+            Mode::Insert(field) => {
                 match event {
                     Event::Key(key) => {
                         match key.code {
@@ -130,8 +130,26 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                                 app.state.input.push(ch);
                             },
                             KeyCode::Enter | KeyCode::Tab => {
-                                let rec = Expense::new(uuid::Uuid::new_v4().to_bytes_le(), app.state.input.clone(), app.state.input.clone(), chrono::Local::today().and_hms(0, 0, 0).timestamp(), 100);
-                                app.datastore.append_one(&rec)?;
+                                let input_val = app.state.input;
+                                match field {
+                                    Field::Name => {
+                                        app.state.buffer.set_name(&input_val);
+                                        app.state.mode = Mode::Insert(Field::Tag);
+                                    }, 
+                                    Field::Tag => {
+                                        app.state.buffer.set_tag(&input_val);
+                                        app.state.mode = Mode::Insert(Field::Date);
+                                    },
+                                    Field::Date => {
+                                        app.state.buffer.set_date(&input_val);
+                                        app.state.mode = Mode::Insert(Field::Amount);
+                                    },
+                                    Field::Amount => {
+                                        app.state.buffer.set_amount(&input_val);
+                                        app.datastore.append_one(&app.state.buffer)?;
+                                        app.state.buffer = Expense::empty();
+                                    }
+                                }
                                 app.state.input = String::new();
                             },
                             KeyCode::Esc => {
@@ -167,9 +185,9 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         .margin(2)
         .constraints(
             [
-                Constraint::Percentage(20),
-                Constraint::Percentage(40),
-                Constraint::Percentage(40)
+                Constraint::Percentage(30),
+                Constraint::Percentage(35),
+                Constraint::Percentage(35)
             ].as_ref()
         )
         .split(stack[0]);

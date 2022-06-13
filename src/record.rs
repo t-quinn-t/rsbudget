@@ -63,6 +63,18 @@ impl Expense {
     pub fn set_name(&mut self, name: &str) {
         self.name = String::from(name);
     }
+
+    pub fn set_tag(&mut self, tag: &str) {
+        self.name = String::from(tag);
+    }
+
+    pub fn set_date(&mut self, date: &str) {
+        self.date_timestamp = date.parse::<i64>().unwrap();
+    }
+
+    pub fn set_amount(&mut self, amount: &str) {
+        self.amount = amount.parse::<i32>().unwrap();
+    }
 }
 
 

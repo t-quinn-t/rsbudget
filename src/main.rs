@@ -213,28 +213,28 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         ]);
 
     // Name Input 
-    let input_block = render_input_block(Field::Name);
+    let input_block = render_input_block(app, Field::Name);
     let input_block_inner_area = input_block.inner(input_stack_left[0]);
     frame.render_widget(input_block, input_stack_left[0]);
     let block_content = render_input(app, Field::Name);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
     // Tag Input 
-    let input_block = render_input_block(Field::Tag);
+    let input_block = render_input_block(app, Field::Tag);
     let input_block_inner_area = input_block.inner(input_stack_left[1]);
     frame.render_widget(input_block, input_stack_left[1]);
     let block_content = render_input(app, Field::Tag);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
     // Date Input 
-    let input_block = render_input_block(Field::Date);
+    let input_block = render_input_block(app, Field::Date);
     let input_block_inner_area = input_block.inner(input_stack_right[0]);
     frame.render_widget(input_block, input_stack_right[0]);
     let block_content = render_input(app, Field::Date);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
     // Amount Input
-    let input_block = render_input_block(Field::Amount);
+    let input_block = render_input_block(app, Field::Amount);
     let input_block_inner_area = input_block.inner(input_stack_right[1]);
     frame.render_widget(input_block, input_stack_right[1]);
     let block_content = render_input(app, Field::Amount);
@@ -283,13 +283,22 @@ fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {
     return Span::from("");
 }
 
-fn render_input_block<'a>(field: Field) -> Block<'a> {
+fn render_input_block<'a>(app: &Controller, field: Field) -> Block<'a> {
     let name = match field { 
         Field::Name => "Title",
         Field::Tag => "Tag",
         Field::Amount => "Amount",
         Field::Date => "Date"
     };
+
+    if let Mode::Insert(f) = &app.state.mode {
+        if field == *f {
+            return Block::default()
+                .borders(Borders::ALL)
+                .border_style(Style::default().fg(Color::Yellow))
+                .title(Span::styled(name, Style::default().fg(Color::Yellow)));
+        }
+    }
 
     Block::default()
         .borders(Borders::ALL)

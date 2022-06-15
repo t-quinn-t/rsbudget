@@ -5,9 +5,9 @@ use std::io;
 use tui::{
     Terminal, Frame, 
     backend::{Backend, CrosstermBackend},
-    widgets::{Block, Borders, ListItem, List},
+    widgets::{Block, Borders, ListItem, List, Tabs},
     layout::{Layout, Constraint, Direction}, 
-    text::{Span},
+    text::{Span, Spans},
     style::{Style, Color}
 }; 
 
@@ -240,9 +240,24 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     let block_content = render_input(app, Field::Amount);
     frame.render_widget(Block::default().title(block_content), input_block_inner_area);
 
+    // Help Menu 
     frame.render_widget(instruction_block, chunk[0]);
-    frame.render_widget(render_list(app), stack[1]);
+
+    //Panel
+    let titles = ["Overview", "Recent Records"].iter().cloned().map(Spans::from).collect();
+    let panel_block = Block::default().borders(Borders::ALL);
+    let tabs_block_inner_area = panel_block.inner(stack[1]);
+    let tabs_block_inner_area = panel_block.inner(tabs_block_inner_area);
+    let tabs_block_inner_area = panel_block.inner(tabs_block_inner_area);
+    let tabs = Tabs::new(titles)
+        .block(panel_block)
+        .style(Style::default().fg(Color::White))
+        .highlight_style(Style::default().fg(Color::Yellow))
+        .divider("|");
+    frame.render_widget(tabs, stack[1]);
+    frame.render_widget(render_list(app), tabs_block_inner_area);
 }
+
 
 // UI Component Render 
 fn render_list(app: &Controller) -> List {
@@ -253,7 +268,7 @@ fn render_list(app: &Controller) -> List {
         ul.push(li);
     }
     return List::new(ul)
-        .block(Block::default().title("Expenses").borders(Borders::ALL));
+        .block(Block::default().title("Expenses").borders(Borders::NONE));
 }
 
 fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {

@@ -283,9 +283,9 @@ fn render_table(app: &Controller) -> Table {
         rows.push(li);
     };
 
-    return Table::new(rows)// As any other widget, a Table can be wrapped in a Block.
+    return Table::new(rows)
     .block(Block::default())
-    .widths(&[Constraint::Percentage(25), Constraint::Percentage(25), Constraint::Percentage(25), Constraint::Percentage(25)])
+    .widths(&[Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(20)])
     .header(header)
     .column_spacing(1);
 }

@@ -5,7 +5,7 @@ use std::io;
 use tui::{
     Terminal, Frame, 
     backend::{Backend, CrosstermBackend},
-    widgets::{Block, Borders, ListItem, List, Tabs},
+    widgets::{Block, Borders, ListItem, List, Tabs, Table, Cell, Row},
     layout::{Layout, Constraint, Direction}, 
     text::{Span, Spans},
     style::{Style, Color}
@@ -248,27 +248,46 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     let panel_block = Block::default().borders(Borders::ALL);
     let tabs_block_inner_area = panel_block.inner(stack[1]);
     let tabs_block_inner_area = panel_block.inner(tabs_block_inner_area);
-    let tabs_block_inner_area = panel_block.inner(tabs_block_inner_area);
     let tabs = Tabs::new(titles)
         .block(panel_block)
         .style(Style::default().fg(Color::White))
         .highlight_style(Style::default().fg(Color::Yellow))
         .divider("|");
     frame.render_widget(tabs, stack[1]);
-    frame.render_widget(render_list(app), tabs_block_inner_area);
+    frame.render_widget(render_table(app), tabs_block_inner_area);
 }
 
 
 // UI Component Render 
-fn render_list(app: &Controller) -> List {
+fn render_table(app: &Controller) -> Table {
     let data = app.datastore.list_all().unwrap();
-    let mut ul = Vec::new();
+
+    let header = Row::new(vec![
+        Cell::from("Title"),
+        Cell::from("Tag"),
+        Cell::from("Date"),
+        Cell::from("Amount")
+    ])
+        .style(Style::default().fg(Color::Yellow));
+
+    let mut rows = Vec::new();
     for record in data {
-        let li = ListItem::new(record.name()); 
-        ul.push(li);
-    }
-    return List::new(ul)
-        .block(Block::default().title("Expenses").borders(Borders::NONE));
+        let li = Row::new(vec![
+            Cell::from(record.name()),
+            Cell::from(record.tag()),
+            Cell::from(
+                Utc.timestamp_nanos(record.date()).date().to_string()
+            ),
+            Cell::from(record.amount().to_string())
+        ]);
+        rows.push(li);
+    };
+
+    return Table::new(rows)// As any other widget, a Table can be wrapped in a Block.
+    .block(Block::default())
+    .widths(&[Constraint::Percentage(25), Constraint::Percentage(25), Constraint::Percentage(25), Constraint::Percentage(25)])
+    .header(header)
+    .column_spacing(1);
 }
 
 fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {

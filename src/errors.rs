@@ -6,5 +6,5 @@ pub enum Error {
     #[error(transparent)]
     IOError(#[from] std::io::Error),
     #[error("Failed reading .env values")]
-    EVError(#[from] std::env::VarError)
+    EVError(#[from] std::env::VarError),
 }

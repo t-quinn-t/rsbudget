@@ -7,7 +7,7 @@ use tui::{
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, Cell, Row, Table, Tabs, List, ListItem},
+    widgets::{Block, Borders, Cell, List, ListItem, Row, Table, Tabs},
     Frame, Terminal,
 };
 
@@ -259,10 +259,9 @@ fn render_menu() -> List<'static> {
         ListItem::new("Press i to edit"),
         ListItem::new("Press Esc to quit."),
         ListItem::new("Press Tab to navigate."),
-        ListItem::new("Press ? for a complete help.")
+        ListItem::new("Press ? for a complete help."),
     ];
-    List::new(items)
-        .block(Block::default().title("Help"))
+    List::new(items).block(Block::default().title("Help"))
 }
 
 fn render_table(app: &Controller) -> Table {

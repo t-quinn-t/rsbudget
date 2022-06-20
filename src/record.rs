@@ -6,26 +6,24 @@ pub struct Expense {
     name: String,
     tag: String,
     date_timestamp: i64,
-    amount: i32
+    amount: i32,
 }
 
 impl PartialEq<Expense> for Expense {
     fn eq(&self, other: &Expense) -> bool {
-        self.id == other.id 
+        self.id == other.id
     }
 }
 
 impl Expense {
-
-    pub fn new(
-        id: [u8; 16],
-        name: String,
-        tag: String,
-        date: i64,
-        amount: i32) -> Expense {
+    pub fn new(id: [u8; 16], name: String, tag: String, date: i64, amount: i32) -> Expense {
         return Expense {
-            id, name, tag, date_timestamp: date, amount
-        }
+            id,
+            name,
+            tag,
+            date_timestamp: date,
+            amount,
+        };
     }
 
     pub fn empty() -> Expense {
@@ -34,7 +32,7 @@ impl Expense {
             name: String::new(),
             tag: String::new(),
             date_timestamp: 0,
-            amount: 0
+            amount: 0,
         }
     }
 
@@ -58,7 +56,7 @@ impl Expense {
         return self.amount;
     }
 
-    pub fn set_id(&mut self, id:[u8; 16]) {
+    pub fn set_id(&mut self, id: [u8; 16]) {
         self.id = id;
     }
 
@@ -78,5 +76,3 @@ impl Expense {
         self.amount = amount.parse::<i32>().unwrap();
     }
 }
-
-

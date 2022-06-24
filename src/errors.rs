@@ -7,4 +7,6 @@ pub enum Error {
     IOError(#[from] std::io::Error),
     #[error("Failed reading .env values")]
     EVError(#[from] std::env::VarError),
+    #[error(transparent)]
+    INError(#[from] chrono::ParseError)
 }

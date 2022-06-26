@@ -103,6 +103,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
+// +++++++++++++++++++ EVENTS ++++++++++++++++++++ //
 fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<(), Error> {
     loop {
         terminal.draw(|f| render(f, &app))?;
@@ -169,8 +170,8 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
     }
 }
 
+// +++++++++++++++++++ LAYOUT ++++++++++++++++++++ //
 fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
-    // +++++++++++++++++++ Layout ++++++++++++++++++++ //
     // Layout: divide page into top and bottom
     let stack = Layout::default()
         .direction(Direction::Vertical)
@@ -199,7 +200,7 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         )
         .split(stack[0]);
 
-    // +++++++++++++++++++ UI Components ++++++++++++++++++++ //
+    // +++++++++++++++++++ ASSEMBLE ++++++++++++++++++++ //
     // Input fields and blocks
     let input_stack_layout = Layout::default()
         .direction(Direction::Vertical)
@@ -272,7 +273,7 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     frame.render_widget(render_table(app), tabs_block_inner_area);
 }
 
-// Render helper functions
+// +++++++++++++++++++ COMPONENTS ++++++++++++++++++++ //
 fn render_menu() -> List<'static> {
     let items = [
         ListItem::new("Press i to edit"),

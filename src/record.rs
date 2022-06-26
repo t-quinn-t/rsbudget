@@ -5,7 +5,7 @@ pub struct Expense {
     id: [u8; 16],
     name: String,
     tag: String,
-    date_timestamp: i64,
+    date_str: String,
     amount: i32,
 }
 
@@ -16,12 +16,12 @@ impl PartialEq<Expense> for Expense {
 }
 
 impl Expense {
-    pub fn new(id: [u8; 16], name: String, tag: String, date: i64, amount: i32) -> Expense {
+    pub fn new(id: [u8; 16], name: String, tag: String, date_str: &str, amount: i32) -> Expense {
         return Expense {
             id,
             name,
             tag,
-            date_timestamp: date,
+            date_str: String::from(date_str),
             amount,
         };
     }
@@ -31,7 +31,7 @@ impl Expense {
             id: Uuid::new_v4().to_bytes_le(),
             name: String::new(),
             tag: String::new(),
-            date_timestamp: 0,
+            date_str: String::new(),
             amount: 0,
         }
     }
@@ -48,8 +48,8 @@ impl Expense {
         return self.tag.clone();
     }
 
-    pub fn date(&self) -> i64 {
-        return self.date_timestamp;
+    pub fn date(&self) -> &str {
+        return &self.date_str;
     }
 
     pub fn amount(&self) -> i32 {
@@ -68,8 +68,8 @@ impl Expense {
         self.tag = String::from(tag);
     }
 
-    pub fn set_date(&mut self, date: &str) {
-        self.date_timestamp = date.parse::<i64>().unwrap();
+    pub fn set_date(&mut self, date_str: &str) {
+        self.date_str = String::from(date_str);
     }
 
     pub fn set_amount(&mut self, amount: &str) {

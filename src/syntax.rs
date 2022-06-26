@@ -4,7 +4,7 @@ use chrono::{Date, DateTime, Datelike, Local, NaiveDate};
 
 use crate::errors::Error;
 
-fn parse_date(input: &str) -> Result<NaiveDate, Error> {
+pub fn parse_date(input: &str) -> Result<NaiveDate, Error> {
     let d = NaiveDate::from_str(input)
         .or_else(|_| NaiveDate::parse_from_str(input, "%d/%m/%Y"))
         .or_else(|_| {

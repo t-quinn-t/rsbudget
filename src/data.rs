@@ -72,7 +72,7 @@ impl ExpenseDS for DataStore {
                 row.get("uuid")?,
                 row.get("name")?,
                 row.get("tag")?,
-                row.get("date")?,
+                &row.get("date")?,
                 row.get("amount")?,
             ))
         })?;
@@ -124,7 +124,7 @@ impl DataStore {
                 uuid BLOB NOT NULL PRIMARY KEY, 
                 name VARCHAR(255) NOT NULL, 
                 tag VARCHAR(255) NOT NULL,
-                date INTEGER NOT NULL, 
+                date VARCHAR(11) NOT NULL, 
                 amount INTEGER NOT NULL   
             )
         ";
@@ -145,7 +145,7 @@ fn test_crud() {
         test_uuid1,
         String::from("name1"),
         String::from("tag1"),
-        test_date1.and_hms(0, 0, 0).timestamp(),
+        &test_date1.to_string(),
         100,
     );
 
@@ -155,7 +155,7 @@ fn test_crud() {
         test_uuid2,
         String::from("name2"),
         String::from("tag2"),
-        test_date2.and_hms(0, 0, 0).timestamp(),
+        &test_date2.to_string(), 
         200,
     );
 

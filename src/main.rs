@@ -23,9 +23,9 @@ extern crate log;
 use log::*;
 extern crate pretty_env_logger;
 
-use rbudget::data::*;
 use rbudget::errors::Error;
 use rbudget::record::*;
+use rbudget::{data::*, syntax::parse_date};
 
 struct Controller {
     datastore: DataStore,
@@ -49,6 +49,7 @@ struct State {
     input: String,
     buffer: Expense,
     mode: Mode,
+    msg: String,
 }
 
 impl Controller {
@@ -59,6 +60,7 @@ impl Controller {
                 input: String::new(),
                 buffer: Expense::empty(),
                 mode: Mode::Normal,
+                msg: String::new(),
             },
         })
     }
@@ -138,8 +140,17 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                                 app.state.mode = Mode::Insert(Field::Date);
                             }
                             Field::Date => {
-                                app.state.buffer.set_date(&input_val);
-                                app.state.mode = Mode::Insert(Field::Amount);
+                                let nd = parse_date(&input_val);
+                                match nd {
+                                    Err(e) => {
+                                        app.state.msg =
+                                            String::from("ERROR: cannot read date input.");
+                                    }
+                                    Ok(date) => {
+                                        app.state.buffer.set_date(&date.to_string());
+                                        app.state.mode = Mode::Insert(Field::Amount);
+                                    }
+                                }
                             }
                             Field::Amount => {
                                 app.state.buffer.set_amount(&input_val);
@@ -166,7 +177,14 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     let stack = Layout::default()
         .direction(Direction::Vertical)
         .margin(2)
-        .constraints([Constraint::Length(12), Constraint::Percentage(90)].as_ref())
+        .constraints(
+            [
+                Constraint::Length(12),
+                Constraint::Length(3),
+                Constraint::Percentage(90),
+            ]
+            .as_ref(),
+        )
         .split(frame.size());
 
     // Layout: divide top into 3 columns
@@ -235,6 +253,9 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     // Help Menu
     frame.render_widget(render_menu(), chunk[0]);
 
+    // Message
+    frame.render_widget(Block::default().title(app.state.msg.clone()), stack[1]);
+
     // Tabs
     let titles = ["Overview", "Recent Records"]
         .iter()
@@ -242,14 +263,14 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         .map(Spans::from)
         .collect();
     let panel_block = Block::default().borders(Borders::ALL);
-    let tabs_block_inner_area = panel_block.inner(stack[1]);
+    let tabs_block_inner_area = panel_block.inner(stack[2]);
     let tabs_block_inner_area = panel_block.inner(tabs_block_inner_area);
     let tabs = Tabs::new(titles)
         .block(panel_block)
         .style(Style::default().fg(Color::White))
         .highlight_style(Style::default().fg(Color::Yellow))
         .divider("|");
-    frame.render_widget(tabs, stack[1]);
+    frame.render_widget(tabs, stack[2]);
     frame.render_widget(render_table(app), tabs_block_inner_area);
 }
 

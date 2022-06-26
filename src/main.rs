@@ -174,7 +174,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                             }
                         }
                         app.state.input = String::new();
-                    },
+                    }
                     KeyCode::Esc => {
                         app.state.mode = Mode::Normal;
                     }

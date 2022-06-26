@@ -6,7 +6,7 @@ use tui::{
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout},
     style::{Color, Style},
-    text::{Span, Spans, Text},
+    text::{Span, Spans},
     widgets::{Block, Borders, Cell, List, ListItem, Row, Table, Tabs},
     Frame, Terminal,
 };
@@ -16,8 +16,6 @@ use crossterm::{
     execute,
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
-
-use chrono::prelude::{Local, TimeZone, Utc};
 
 extern crate log;
 use log::*;
@@ -142,7 +140,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                             Field::Date => {
                                 let nd = parse_date(&input_val);
                                 match nd {
-                                    Err(e) => {
+                                    Err(_e) => {
                                         app.state.msg =
                                             String::from("ERROR: cannot read date input.");
                                     }
@@ -285,7 +283,7 @@ fn render_menu() -> List<'static> {
     List::new(items).block(Block::default().title("Help"))
 }
 
-fn render_table(app: &Controller) -> Table {
+fn render_table<'a> (app: &'a Controller) -> Table<'a> {
     let data = app.datastore.list_all().unwrap();
 
     let header = Row::new(vec![
@@ -301,7 +299,7 @@ fn render_table(app: &Controller) -> Table {
         let li = Row::new(vec![
             Cell::from(record.name()),
             Cell::from(record.tag()),
-            Cell::from(Utc.timestamp_nanos(record.date()).date().to_string()),
+            Cell::from(record.date()),
             Cell::from(record.amount().to_string()),
         ]);
         rows.push(li);
@@ -319,7 +317,7 @@ fn render_table(app: &Controller) -> Table {
         .column_spacing(1);
 }
 
-fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {
+fn render_input<'a>(app: &'a Controller, field: Field) -> Span<'a> {
     if let Mode::Insert(f) = &app.state.mode {
         if field == *f {
             return Span::from(app.state.input.clone());
@@ -332,11 +330,11 @@ fn render_input<'a>(app: &Controller, field: Field) -> Span<'a> {
                 return Span::from(app.state.buffer.tag());
             }
             Field::Date => {
-                let date_timestamp = app.state.buffer.date();
-                if date_timestamp == 0 {
+                let date_str = app.state.buffer.date();
+                if date_str == "" {
                     return Span::from(String::new());
                 }
-                return Span::from(Utc.timestamp_nanos(date_timestamp).date().to_string());
+                return Span::from(date_str);
             }
             Field::Amount => {
                 return Span::from(app.state.buffer.amount().to_string());

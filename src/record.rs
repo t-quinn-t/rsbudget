@@ -48,8 +48,8 @@ impl Expense {
         return self.tag.clone();
     }
 
-    pub fn date(&self) -> &str {
-        return &self.date_str;
+    pub fn date(&self) -> String {
+        return self.date_str.clone();
     }
 
     pub fn amount(&self) -> i32 {

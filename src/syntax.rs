@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use chrono::{Date, DateTime, Datelike, Local, NaiveDate};
+use chrono::{Datelike, Local, NaiveDate};
 
 use crate::errors::Error;
 

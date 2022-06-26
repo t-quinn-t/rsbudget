@@ -68,11 +68,12 @@ impl ExpenseDS for DataStore {
         ",
         )?;
         let exp_iter = stmt.query_map([], |row| {
+            let datestr :String = row.get("date")?;
             Ok(Expense::new(
                 row.get("uuid")?,
                 row.get("name")?,
                 row.get("tag")?,
-                &row.get("date")?,
+                &datestr,
                 row.get("amount")?,
             ))
         })?;

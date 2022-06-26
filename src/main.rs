@@ -127,16 +127,16 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                     KeyCode::Char(ch) => {
                         app.state.input.push(ch);
                     }
-                    KeyCode::Enter | KeyCode::Tab => {
+                    KeyCode::Tab | KeyCode::Enter => {
                         let input_val = app.state.input;
                         match field {
                             Field::Name => {
                                 app.state.buffer.set_name(&input_val);
-                                app.state.mode = Mode::Insert(Field::Tag);
+                                app.state.mode = Mode::Insert(Field::Date);
                             }
                             Field::Tag => {
                                 app.state.buffer.set_tag(&input_val);
-                                app.state.mode = Mode::Insert(Field::Date);
+                                app.state.mode = Mode::Insert(Field::Tag);
                             }
                             Field::Date => {
                                 let nd = parse_date(&input_val);
@@ -153,12 +153,28 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                             }
                             Field::Amount => {
                                 app.state.buffer.set_amount(&input_val);
+                                app.state.mode = Mode::Insert(Field::Name);
+                            }
+                        }
+                        // Register record when user hits 'Enter' key.
+                        if key.code == KeyCode::Enter {
+                            if app.state.buffer.name() == "" {
+                                app.state.msg = String::from("ERROR: record name is empty.");
+                                app.state.mode = Mode::Insert(Field::Name);
+                            } else if app.state.buffer.date() == "" {
+                                app.state.msg = String::from("ERROR: record does not have a date.");
+                                app.state.mode = Mode::Insert(Field::Date);
+                            } else if app.state.buffer.amount() == 0 {
+                                app.state.msg =
+                                    String::from("ERROR: record does not have an amount.");
+                                app.state.mode = Mode::Insert(Field::Amount);
+                            } else {
                                 app.datastore.append_one(&app.state.buffer)?;
                                 app.state.buffer = Expense::empty();
                             }
                         }
                         app.state.input = String::new();
-                    }
+                    },
                     KeyCode::Esc => {
                         app.state.mode = Mode::Normal;
                     }
@@ -284,7 +300,7 @@ fn render_menu() -> List<'static> {
     List::new(items).block(Block::default().title("Help"))
 }
 
-fn render_table<'a> (app: &'a Controller) -> Table<'a> {
+fn render_table<'a>(app: &'a Controller) -> Table<'a> {
     let data = app.datastore.list_all().unwrap();
 
     let header = Row::new(vec![

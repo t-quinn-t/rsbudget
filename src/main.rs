@@ -191,39 +191,45 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     // Layout: divide page into top and bottom
     let stack = Layout::default()
         .direction(Direction::Vertical)
-        .margin(2)
         .constraints(
             [
-                Constraint::Length(12),
-                Constraint::Length(3),
-                Constraint::Percentage(90),
+                Constraint::Percentage(24),
+                Constraint::Percentage(64),
+                Constraint::Percentage(12),
             ]
             .as_ref(),
         )
         .split(frame.size());
 
-    // Layout: divide top into 3 columns
     let chunk = Layout::default()
         .direction(Direction::Horizontal)
-        .margin(2)
         .constraints(
             [
                 Constraint::Percentage(30),
-                Constraint::Percentage(35),
-                Constraint::Percentage(35),
+                Constraint::Percentage(30),
+                Constraint::Percentage(40),
             ]
             .as_ref(),
         )
         .split(stack[0]);
 
+    let input_columns= Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage(50),
+            Constraint::Percentage(50),
+        ]);
+
     // +++++++++++++++++++ ASSEMBLE ++++++++++++++++++++ //
     // Input fields and blocks
     let input_stack_layout = Layout::default()
         .direction(Direction::Vertical)
-        .margin(1)
-        .constraints([Constraint::Length(3), Constraint::Length(3)].as_ref());
-    let input_stack_left = input_stack_layout.split(chunk[1]);
-    let input_stack_right = input_stack_layout.split(chunk[2]);
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref());
+    let input_container = Block::default().title("Add new record:").borders(Borders::ALL).border_style(Style::default().fg(Color::LightGreen));
+    let input_chunks = input_columns.split(input_container.inner(chunk[2]));
+    frame.render_widget(input_container, chunk[2]);
+    let input_stack_left = input_stack_layout.split(input_chunks[0]);
+    let input_stack_right = input_stack_layout.split(input_chunks[1]);
 
     // Name Input
     let input_block = render_input_block(app, Field::Name);
@@ -269,7 +275,9 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     frame.render_widget(render_menu(), chunk[0]);
 
     // Message
-    frame.render_widget(Block::default().title(app.state.msg.clone()), stack[1]);
+    let msg_block = Block::default().title("Log").borders(Borders::ALL).border_style(Style::default().fg(Color::LightGreen));
+    frame.render_widget(render_msg(app), msg_block.inner(stack[2]));
+    frame.render_widget(msg_block, stack[2]);
 
     // Tabs
     let titles = ["Overview", "Recent Records"]
@@ -278,14 +286,14 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
         .map(Spans::from)
         .collect();
     let panel_block = Block::default().borders(Borders::ALL);
-    let tabs_block_inner_area = panel_block.inner(stack[2]);
+    let tabs_block_inner_area = panel_block.inner(stack[1]);
     let tabs_block_inner_area = panel_block.inner(tabs_block_inner_area);
     let tabs = Tabs::new(titles)
         .block(panel_block)
         .style(Style::default().fg(Color::White))
         .highlight_style(Style::default().fg(Color::Yellow))
         .divider("|");
-    frame.render_widget(tabs, stack[2]);
+    frame.render_widget(tabs, stack[1]);
     frame.render_widget(render_table(app), tabs_block_inner_area);
 }
 
@@ -297,7 +305,12 @@ fn render_menu() -> List<'static> {
         ListItem::new("Press Tab to navigate."),
         ListItem::new("Press ? for a complete help."),
     ];
-    List::new(items).block(Block::default().title("Help"))
+    List::new(items).block(Block::default().title("Help").borders(Borders::ALL).border_style(Style::default().fg(Color::LightGreen)))
+}
+
+fn render_msg(app: &Controller) -> Block {
+    let msg_txt = Span::from(app.state.msg.clone());
+    Block::default().title(msg_txt)
 }
 
 fn render_table<'a>(app: &'a Controller) -> Table<'a> {

@@ -124,6 +124,9 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
             },
             Mode::Insert(field) => match event {
                 Event::Key(key) => match key.code {
+                    KeyCode::Backspace => {
+                        app.state.input.pop();
+                    }
                     KeyCode::Char(ch) => {
                         app.state.input.push(ch);
                     }
@@ -136,7 +139,7 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                             }
                             Field::Tag => {
                                 app.state.buffer.set_tag(&input_val);
-                                app.state.mode = Mode::Insert(Field::Tag);
+                                app.state.mode = Mode::Insert(Field::Amount);
                             }
                             Field::Date => {
                                 let nd = parse_date(&input_val);
@@ -147,7 +150,8 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                                     }
                                     Ok(date) => {
                                         app.state.buffer.set_date(&date.to_string());
-                                        app.state.mode = Mode::Insert(Field::Amount);
+                                        app.state.mode = Mode::Insert(Field::Tag);
+                                        app.state.msg.clear();
                                     }
                                 }
                             }

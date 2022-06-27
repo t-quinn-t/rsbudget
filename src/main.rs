@@ -393,13 +393,13 @@ fn render_input_block<'a>(app: &Controller, field: Field) -> Block<'a> {
     if let Mode::Insert(f) = &app.state.mode {
         if field == *f {
             return Block::default()
-                .borders(Borders::ALL)
+                .borders(Borders::LEFT.union(Borders::RIGHT))
                 .border_style(Style::default().fg(Color::LightBlue))
                 .title(Span::styled(name, Style::default().fg(Color::LightBlue)));
         }
     }
 
     Block::default()
-        .borders(Borders::ALL)
-        .title(Span::styled(name, Style::default().fg(Color::LightBlue)))
+        .borders(Borders::LEFT)
+        .title(Span::styled(name, Style::default().fg(Color::Blue)))
 }

@@ -156,8 +156,12 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, mut app: Controller) -> Result<()
                                 }
                             }
                             Field::Amount => {
-                                app.state.buffer.set_amount(&input_val);
-                                app.state.mode = Mode::Insert(Field::Name);
+                                let res = app.state.buffer.set_amount(&input_val);
+                                if let Err(e) = res {
+                                    app.state.msg = String::from("ERROR: cannot parse amount");
+                                } else {
+                                    app.state.mode = Mode::Insert(Field::Name);
+                                }
                             }
                         }
                         // Register record when user hits 'Enter' key.
@@ -295,7 +299,7 @@ fn render<B: Backend>(frame: &mut Frame<B>, app: &Controller) {
     let tabs = Tabs::new(titles)
         .block(panel_block)
         .style(Style::default().fg(Color::White))
-        .highlight_style(Style::default().fg(Color::Yellow))
+        .highlight_style(Style::default().fg(Color::LightBlue))
         .divider("|");
     frame.render_widget(tabs, stack[1]);
     frame.render_widget(render_table(app), tabs_block_inner_area);
@@ -326,7 +330,7 @@ fn render_table<'a>(app: &'a Controller) -> Table<'a> {
         Cell::from("Date"),
         Cell::from("Amount"),
     ])
-    .style(Style::default().fg(Color::Yellow));
+    .style(Style::default().fg(Color::LightBlue));
 
     let mut rows = Vec::new();
     for record in data {
@@ -390,12 +394,12 @@ fn render_input_block<'a>(app: &Controller, field: Field) -> Block<'a> {
         if field == *f {
             return Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Yellow))
-                .title(Span::styled(name, Style::default().fg(Color::Yellow)));
+                .border_style(Style::default().fg(Color::LightBlue))
+                .title(Span::styled(name, Style::default().fg(Color::LightBlue)));
         }
     }
 
     Block::default()
         .borders(Borders::ALL)
-        .title(Span::styled(name, Style::default().fg(Color::Yellow)))
+        .title(Span::styled(name, Style::default().fg(Color::LightBlue)))
 }

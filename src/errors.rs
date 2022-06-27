@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 /// Convert different error types to a custom error
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -6,7 +8,9 @@ pub enum Error {
     #[error(transparent)]
     IOError(#[from] std::io::Error),
     #[error("Failed reading .env values")]
-    EVError(#[from] std::env::VarError),
+    EnvError(#[from] std::env::VarError),
     #[error(transparent)]
-    INError(#[from] chrono::ParseError)
+    DateError(#[from] chrono::ParseError),
+    #[error(transparent)]
+    ParseError(#[from] ParseIntError)
 }

@@ -1,5 +1,7 @@
 use uuid::Uuid;
 
+use crate::errors::Error;
+
 #[derive(Debug)]
 pub struct Expense {
     id: [u8; 16],
@@ -72,7 +74,8 @@ impl Expense {
         self.date_str = String::from(date_str);
     }
 
-    pub fn set_amount(&mut self, amount: &str) {
-        self.amount = amount.parse::<i32>().unwrap();
+    pub fn set_amount(&mut self, amount: &str) -> Result<(), Error> {
+        self.amount = amount.parse::<i32>()?;
+        Ok(())
     }
 }
